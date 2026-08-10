@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&family=Open+Sans&family=Lato&family=Montserrat&family=Oswald&family=Source+Sans+Pro&family=Slabo+27px&family=Raleway&family=PT+Sans&family=Merriweather&family=Noto+Sans&family=Nunito&family=Concert+One&family=Playfair+Display&family=Rubik&family=Lora&family=Work+Sans&family=Fira+Sans&family=Quicksand&family=Inter&family=Anton&family=Bebas+Neue&family=Dancing+Script&family=Pacifico&family=Cinzel&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-accent: #2563EB;
+  --font-sans: "Inter", sans-serif;
+}
+
+body {
+  background-color: var(--color-background);
+  color: white;
+  font-family: var(--font-sans);
+}
+
+/* Success toast slide-in animation */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Hide native video fullscreen button since it only fullscreens the video, not the subtitles */
+video::-webkit-media-controls-fullscreen-button {
+  display: none !important;
+}
