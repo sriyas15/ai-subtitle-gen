@@ -106,8 +106,13 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     for (let i = 0; i < segment.words.length; i++) {
       const activeWord = segment.words[i];
-      const wordStart = formatAssTime(activeWord.startTime);
-      const wordEnd = formatAssTime(activeWord.endTime);
+      
+      // Tile times continuously to prevent flickering during fast speech
+      const startTime = i === 0 ? segment.startTime : activeWord.startTime;
+      const endTime = i === segment.words.length - 1 ? segment.endTime : segment.words[i + 1].startTime;
+
+      const wordStart = formatAssTime(startTime);
+      const wordEnd = formatAssTime(endTime);
       
       let lineText = '';
       for (let j = 0; j < segment.words.length; j++) {

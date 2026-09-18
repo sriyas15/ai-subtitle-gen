@@ -17,15 +17,19 @@ const VideoSubtitleOverlay = ({ subtitles, currentTime, styleConfig }) => {
   );
 
   // If no active segment is found at the current time, show a dummy preview segment
-  // so the user can always see their style changes live!
+  // only at the starting 0:00 second so the user can see their style changes initially.
   if (!activeSegment) {
-    activeSegment = {
-      text: "Preview Subtitle",
-      words: [
-        { text: "Preview", startTime: currentTime - 1, endTime: currentTime + 1 },
-        { text: "Subtitle", startTime: currentTime + 1, endTime: currentTime + 2 }
-      ]
-    };
+    if (currentTime === 0) {
+      activeSegment = {
+        text: "Preview Subtitle",
+        words: [
+          { text: "Preview", startTime: currentTime - 1, endTime: currentTime + 1 },
+          { text: "Subtitle", startTime: currentTime + 1, endTime: currentTime + 2 }
+        ]
+      };
+    } else {
+      return null;
+    }
   }
 
   const bgStyle = styleConfig ? {
@@ -59,7 +63,15 @@ const VideoSubtitleOverlay = ({ subtitles, currentTime, styleConfig }) => {
         >
           {activeSegment.words && activeSegment.words.length > 0 ? (
             activeSegment.words.map((word, idx) => {
-              const isCurrent = currentTime >= word.startTime && currentTime <= word.endTime;
+              // Tile times continuously to prevent flickering during fast speech
+              const segmentStart = activeSegment.startTime ?? word.startTime;
+              const startTime = idx === 0 ? segmentStart : word.startTime;
+              
+              // Fallback to word.endTime if activeSegment.endTime is undefined (like in preview dummy)
+              const segmentEnd = activeSegment.endTime ?? word.endTime;
+              const endTime = idx === activeSegment.words.length - 1 ? segmentEnd : activeSegment.words[idx + 1].startTime;
+              
+              const isCurrent = currentTime >= startTime && currentTime < endTime;
               
               // Match the ASS export logic: active word gets highlight color, all others get font color.
               let color = styleConfig ? styleConfig.fontColor : '#ffffff';

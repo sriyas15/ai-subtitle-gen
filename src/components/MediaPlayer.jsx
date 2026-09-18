@@ -37,7 +37,50 @@ const MediaPlayer = forwardRef(({ mediaUrl, isVideo, onTimeUpdate, subtitles, cu
     }
   };
 
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    const media = internalRef.current;
+    if (!media) return;
+
+    const updateLoop = () => {
+      if (internalRef.current && onTimeUpdate) {
+        onTimeUpdate(internalRef.current.currentTime);
+      }
+      rafRef.current = requestAnimationFrame(updateLoop);
+    };
+
+    const handlePlay = () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(updateLoop);
+    };
+
+    const handlePause = () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      // Ensure one last precise update on pause or seek
+      if (internalRef.current && onTimeUpdate) {
+        onTimeUpdate(internalRef.current.currentTime);
+      }
+    };
+
+    media.addEventListener('play', handlePlay);
+    media.addEventListener('playing', handlePlay);
+    media.addEventListener('pause', handlePause);
+    media.addEventListener('waiting', handlePause);
+    media.addEventListener('seeked', handlePause); // Will fire one last update if seeking while paused
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      media.removeEventListener('play', handlePlay);
+      media.removeEventListener('playing', handlePlay);
+      media.removeEventListener('pause', handlePause);
+      media.removeEventListener('waiting', handlePause);
+      media.removeEventListener('seeked', handlePause);
+    };
+  }, [onTimeUpdate]);
+
   const handleTimeUpdate = () => {
+    // Fallback for native timeupdate event in case raf doesn't catch something (like initial load)
     if (internalRef.current && onTimeUpdate) {
       onTimeUpdate(internalRef.current.currentTime);
     }
